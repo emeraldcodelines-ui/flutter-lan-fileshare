@@ -1,0 +1,27 @@
+name: flutter_lan_fileshare
+description: A simple Flutter Windows app for sharing files over Wi‑Fi/LAN using the lan_web_server package.
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lan_web_server: ^1.0.1+2
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+  generate: true

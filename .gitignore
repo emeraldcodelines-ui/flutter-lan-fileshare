@@ -1,0 +1,93 @@
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.dart_tool/
+.fvm/
+
+# Android
+android/.gradle
+android/.idea
+android/gradle-wrapper.jar
+android/local.properties
+android/**/build/
+android/**/proguard/
+android/**/lint/
+
+# iOS
+ios/.generated/
+ios/**/Pods/
+ios/**/Podfile.lock
+ios/**/.symlinks/
+ios/**/xcuserdata/
+ios/.settings/
+ios/.swiftpm/
+ios/Flutter/App.framework/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/flutter_export_environment.sh
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Windows
+windows/.vs/
+windows/**/Debug/
+windows/**/Release/
+windows/**/x64/
+windows/**/x86/
+windows/**/Win32/
+windows/**/ARM64/
+windows/**/Intermediate/
+windows/**/Logs/
+windows/**/obj/
+windows/**/packages/
+windows/**/Plugins/
+windows/**/ProjectFiles/
+windows/**/Saved/
+windows/**/Binaries/
+
+# Linux
+linux/.flatpak-builder/
+linux/build/
+
+# macOS
+macos/.symlinks/
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Pods/
+macos/**/xcuserdata/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Miscellaneous
+*.lock
+*.pem
+*.p12
+*.key
+*.cer
+*.jks
+*.keystore

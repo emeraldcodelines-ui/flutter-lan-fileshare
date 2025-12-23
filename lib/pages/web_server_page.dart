@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:lan_web_server/lan_web_server.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/settings_service.dart';
+import 'settings_page.dart';
 
 /// Web server page
 class WebServerPage extends StatefulWidget {
@@ -24,14 +26,16 @@ class _WebServerPageState extends State<WebServerPage> {
   String? _errorMessage;
   List<String> _localIps = [];
   String? _selectedIp;
-  final int _webServerPort = 8080;
-  String _sharedDir = '';
+  late int _webServerPort;
+  late String _sharedDir;
   List<Map<String, dynamic>> _files = [];
   bool _isLoadingFiles = false;
   bool _isOperating = false;
   StreamSubscription? _uploadSubscription;
   StreamSubscription? _logSubscription;
   StreamSubscription? _stateSubscription;
+
+  final SettingsService _settingsService = SettingsService();
 
   @override
   void initState() {
@@ -41,12 +45,20 @@ class _WebServerPageState extends State<WebServerPage> {
 
   Future<void> init() async {
     try {
+      // Load settings
+      await _settingsService.loadSettings();
       // Get all local IPv4 addresses
       _localIps = await _getAllLocalIps();
       _selectedIp = _localIps.isNotEmpty ? _localIps.first : '127.0.0.1';
-      // Get default shared directory
-      _sharedDir = await _getDefaultSharedDir();
-      // Create WebServerService
+      // Use settings for port and sharedDir
+      _webServerPort = _settingsService.settings.port;
+      final settingsSharedDir = _settingsService.settings.sharedDir;
+      if (settingsSharedDir.isNotEmpty) {
+        _sharedDir = settingsSharedDir;
+      } else {
+        _sharedDir = await _getDefaultSharedDir();
+      }
+      // Create WebServerService with configured port and sharedDir
       _webServer = WebServerService(port: _webServerPort, sharedDir: _sharedDir);
       _stateSubscription = _webServer.onStateChanged.listen((state) {
         setState(() {
@@ -276,6 +288,13 @@ class _WebServerPageState extends State<WebServerPage> {
             onPressed: () => _showInfoDialog(),
             tooltip: 'Usage',
           ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
+            },
+            tooltip: 'Settings',
+          ),
         ],
       ),
       body: Center(
@@ -337,21 +356,21 @@ class _WebServerPageState extends State<WebServerPage> {
             children: [
               Text('Features:'),
               SizedBox(height: 8),
-              Text('• Access this device from other devices via browser'),
-              Text('• Supports file upload and download'),
-              Text('• No extra software required'),
+              Text('\u2022 Access this device from other devices via browser'),
+              Text('\u2022 Supports file upload and download'),
+              Text('\u2022 No extra software required'),
               SizedBox(height: 16),
               Text('Scenarios:'),
               SizedBox(height: 8),
-              Text('• Start the web server when only local devices are present'),
-              Text('• Other devices can access files via browser'),
-              Text('• Suitable for temporary file sharing'),
+              Text('\u2022 Start the web server when only local devices are present'),
+              Text('\u2022 Other devices can access files via browser'),
+              Text('\u2022 Suitable for temporary file sharing'),
               SizedBox(height: 16),
               Text('Notes:'),
               SizedBox(height: 8),
-              Text('• Ensure devices are on the same LAN'),
-              Text('• Firewall may need to allow port access'),
-              Text('• Use in a secure network environment'),
+              Text('\u2022 Ensure devices are on the same LAN'),
+              Text('\u2022 Firewall may need to allow port access'),
+              Text('\u2022 Use in a secure network environment'),
             ],
           ),
         ),
@@ -556,11 +575,11 @@ class _FeatureCard extends StatelessWidget {
           children: [
             Text('Features', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            const Text('• Start the web server, access from other devices via browser'),
-            const Text('• Supports file upload, download, and delete'),
-            const Text('• Unified shared directory management'),
-            const Text('• Uses sandbox dir on mobile, documents dir on desktop'),
-            const Text('• Recommended for use in local network only'),
+            const Text('\u2022 Start the web server, access from other devices via browser'),
+            const Text('\u2022 Supports file upload, download, and delete'),
+            const Text('\u2022 Unified shared directory management'),
+            const Text('\u2022 Uses sandbox dir on mobile, documents dir on desktop'),
+            const Text('\u2022 Recommended for use in local network only'),
           ],
         ),
       ),
@@ -649,7 +668,7 @@ class _FileListCard extends StatelessWidget {
                 ...regularFiles.map((file) => ListTile(
                       leading: getFileIcon(file['name'] ?? '', isFolder: false),
                       title: Text(file['name'] ?? ''),
-                      subtitle: Text('${file['sizeFormatted'] ?? ''} • ${formatDate(file['modified'] ?? '')}'),
+                      subtitle: Text('${file['sizeFormatted'] ?? ''}  ${formatDate(file['modified'] ?? '')}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -683,7 +702,7 @@ class _FooterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        '© ${DateTime.now().year} Flutter LAN File Share',
+        ' a9 ${DateTime.now().year} Flutter LAN File Share',
         style: const TextStyle(color: Colors.grey, fontSize: 12),
       ),
     );

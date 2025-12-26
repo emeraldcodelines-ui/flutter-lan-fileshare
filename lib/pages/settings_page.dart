@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/settings_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -11,10 +12,10 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final SettingsService _settings = SettingsService();
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _portController;
   late TextEditingController _sharedDirController;
-  
+
   bool _isLoading = true;
   bool _isSaving = false;
   String? _errorMessage;
@@ -39,21 +40,30 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _pickDirectory() async {
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory != null && mounted) {
+      setState(() {
+        _sharedDirController.text = selectedDirectory;
+      });
+    }
+  }
+
   Future<void> _saveSettings() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isSaving = true;
       _errorMessage = null;
       _successMessage = null;
     });
-    
+
     try {
       final port = int.tryParse(_portController.text);
       if (port == null) throw ArgumentError('Port must be a number');
       await _settings.savePort(port);
       await _settings.saveSharedDir(_sharedDirController.text);
-      
+
       setState(() => _successMessage = 'Settings saved successfully!');
     } catch (e) {
       setState(() => _errorMessage = 'Failed to save settings: $e');
@@ -68,7 +78,6 @@ class _SettingsPageState extends State<SettingsPage> {
       _errorMessage = null;
       _successMessage = null;
     });
-    
     try {
       await _settings.resetToDefaults();
       await _loadSettings(); // Reload controllers with defaults
@@ -126,7 +135,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     // Port setting
                     Text('Server Port', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     TextFormField(
                       controller: _portController,
                       decoration: const InputDecoration(
@@ -137,26 +146,40 @@ class _SettingsPageState extends State<SettingsPage> {
                       keyboardType: TextInputType.number,
                       validator: _validatePort,
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
 
                     // Shared directory setting
                     Text('Shared Directory Path', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _sharedDirController,
-                      decoration: const InputDecoration(
-                        hintText: 'Path to shared folder',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.folder),
-                      ),
-                      validator: _validateSharedDir,
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _sharedDirController,
+                            decoration: const InputDecoration(
+                              hintText: 'Path to shared folder',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.folder),
+                            ),
+                            validator: _validateSharedDir,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.folder_open),
+                          onPressed: _pickDirectory,
+                          tooltip: 'Pick directory',
+                          style: IconButton.styleFrom(
+                            padding: const EdgeInsets.all(16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Note: Leave empty to use default directory (Documents/LANFileTransfer/shared)',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 8),
 
                     // Messages
                     if (_errorMessage != null)
@@ -189,7 +212,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 24),
 
                     // Buttons
                     Row(
@@ -218,6 +240,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
+
+                    // Note about changes
                     Text(
                       'Changes will take effect after restarting the web server.',
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),

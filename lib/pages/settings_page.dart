@@ -15,6 +15,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   late TextEditingController _portController;
   late TextEditingController _sharedDirController;
+  String _themeMode = 'system';
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -33,6 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
       await _settings.loadSettings();
       _portController = TextEditingController(text: _settings.port.toString());
       _sharedDirController = TextEditingController(text: _settings.sharedDir);
+      _themeMode = _settings.themeMode;
     } catch (e) {
       setState(() => _errorMessage = 'Failed to load settings: $e');
     } finally {
@@ -86,6 +88,18 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() => _errorMessage = 'Failed to reset settings: $e');
     } finally {
       setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _onThemeModeChanged(String? newValue) async {
+    if (newValue == null) return;
+    setState(() => _themeMode = newValue);
+    try {
+      await _settings.saveThemeMode(newValue);
+      // No need to show success message; theme change is immediate via ListenableBuilder
+    } catch (e) {
+      // Optionally show error, but for simplicity we ignore
+      print('Failed to save theme mode: $e');
     }
   }
 
@@ -178,6 +192,34 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 24),
+
+                    // Theme mode setting
+                    Text('Theme Mode', style: Theme.of(context).textTheme.titleMedium),
+                    SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _themeMode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.palette),
+                        hintText: 'Select theme mode',
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'system',
+                          child: Text('System default'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'light',
+                          child: Text('Light'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'dark',
+                          child: Text('Dark'),
+                        ),
+                      ],
+                      onChanged: _onThemeModeChanged,
                     ),
                     SizedBox(height: 8),
 

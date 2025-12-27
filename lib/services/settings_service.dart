@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsService {
+class SettingsService extends ChangeNotifier {
   static final SettingsService _instance = SettingsService._internal();
   factory SettingsService() => _instance;
   SettingsService._internal();
@@ -17,11 +19,24 @@ class SettingsService {
   String get sharedDir => _sharedDir;
   String get themeMode => _themeMode;
 
+  ThemeMode get themeModeEnum {
+    switch (_themeMode) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _port = prefs.getInt(_portKey) ?? 8080;
     _sharedDir = prefs.getString(_sharedDirKey) ?? '';
     _themeMode = prefs.getString(_themeModeKey) ?? 'system';
+    notifyListeners();
   }
 
   Future<void> savePort(int port) async {
@@ -43,6 +58,7 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_themeModeKey, themeMode);
     _themeMode = themeMode;
+    notifyListeners();
   }
 
   Future<void> resetToDefaults() async {
@@ -53,5 +69,6 @@ class SettingsService {
     _port = 8080;
     _sharedDir = '';
     _themeMode = 'system';
+    notifyListeners();
   }
 }
